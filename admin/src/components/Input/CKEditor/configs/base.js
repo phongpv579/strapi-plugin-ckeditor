@@ -424,8 +424,6 @@ const base = {
   },
 };
 
-
-
 const basePlugins = [
   w.Alignment,
   w.Autoformat,
@@ -486,35 +484,8 @@ const basePlugins = [
   w.WordCount,
 ];
 
-const imgPlugin = w.Image;
-const imgFluidClass = 'img-fluid';
-
-class CustomImage extends imgPlugin {
-  constructor(editor) {
-    super(editor);
-    editor.model.schema.extend('$image', { allowAttributes: 'class' });
-  }
-
-  init() {
-    super.init();
-
-    this.editor.conversion.for('downcast').add(dispatcher => {
-      dispatcher.on('insert:image', (evt, data, conversionApi) => {
-        const modelImage = data.item;
-        const viewImage = conversionApi.mapper.toViewElement(modelImage);
-        const classes = modelImage.getAttribute('class') || '';
-
-        if (!classes.includes(imgFluidClass)) {
-          const newClasses = classes ? `${classes} ${imgFluidClass}` : imgFluidClass;
-          viewImage.setAttribute('class', newClasses);
-        }
-      });
-    });
-  }
-}
-
 export const toolbarEditorConfig = {
-  plugins: [...basePlugins, CustomImage],
+  plugins: basePlugins,
   ...base,
   toolbar: [
     {

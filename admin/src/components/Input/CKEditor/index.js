@@ -68,6 +68,17 @@ const Editor = ({ onChange, name, value, disabled, preset, maxLength }) => {
                 editor.plugins.get( 'ImageUploadEditing' ).on( 'uploadComplete', ( evt, { data, imageElement } ) =>    
                   editor.model.change( writer => writer.setAttribute( 'alt', data.alt, imageElement ) ) );
               }
+
+              editor.model.document.on('change:data', () => {
+                const images = Array.from(editor.model.document.getRoot().getChildrenByPath([0]));
+                for (const img of images) {
+                  if (img.is('element', 'image')) {
+                    editor.model.change(writer => {
+                      writer.setAttribute('class', 'img-fluid', img);
+                    });
+                  }
+                }
+              });
             
               setEditorInstance( editor );
             }}
