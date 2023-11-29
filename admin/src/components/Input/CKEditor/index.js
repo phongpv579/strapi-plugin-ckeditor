@@ -66,7 +66,8 @@ const Editor = ({ onChange, name, value, disabled, preset, maxLength }) => {
 
               if(editor.plugins.has( 'ImageUploadEditing' )){
                 editor.plugins.get( 'ImageUploadEditing' ).on( 'uploadComplete', ( evt, { data, imageElement } ) =>    
-                  editor.model.change( writer => writer.setAttribute( 'alt', data.alt, imageElement ) ) ); 
+                  editor.model.change( writer => writer.setAttribute( 'alt', data.alt, imageElement ) ) );
+                  imageElement.addClass('img-fluid');
               }
             
               setEditorInstance( editor );
