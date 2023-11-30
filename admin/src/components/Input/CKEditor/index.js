@@ -4,8 +4,8 @@ import styled from "styled-components";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { Box, Loader } from '@strapi/design-system';
 
-import {getConfiguration} from "./configuration";
-import {getGlobalStyling} from "./styling";
+import { getConfiguration } from "./configuration";
+import { getGlobalStyling } from "./styling";
 import MediaLib from "../MediaLib";
 
 import ckeditor5Dll from "ckeditor5/build/ckeditor5-dll.js";
@@ -17,25 +17,25 @@ const Wrapper = styled("div")`${({ editorStyles }) => editorStyles}`;
 
 const Editor = ({ onChange, name, value, disabled, preset, maxLength }) => {
 
-  const [ editorInstance, setEditorInstance ] = useState(false);
-  
+  const [editorInstance, setEditorInstance] = useState(false);
+
   const [mediaLibVisible, setMediaLibVisible] = useState(false);
-  
+
   const [uploadPluginConfig, setUploadPluginConfig] = useState(null);
-  
+
   const [config, setConfig] = useState(null);
 
   const [lengthMax, setLengthMax] = useState(false);
 
   const wordCounter = useRef(null);
-  
+
   const handleToggleMediaLib = () => setMediaLibVisible(prev => !prev);
 
   const handleCounter = (number) => number > maxLength ? setLengthMax(true) : setLengthMax(false);
-  
+
   useEffect(() => {
     (async () => {
-      const {currentConfig, uploadPluginConfig} = await getConfiguration(preset, handleToggleMediaLib);
+      const { currentConfig, uploadPluginConfig } = await getConfiguration(preset, handleToggleMediaLib);
       setConfig(currentConfig);
       setUploadPluginConfig(uploadPluginConfig);
     })();
@@ -43,60 +43,52 @@ const Editor = ({ onChange, name, value, disabled, preset, maxLength }) => {
 
   return (
     <>
-    {config && <GlobalStyling />}
-    <Wrapper editorStyles={config?.styles} >
-      {!config &&
-      <LoaderBox hasRadius background="neutral100">
-        <Loader>Loading...</Loader>
-      </LoaderBox>}
-      {config &&
+      {config && <GlobalStyling />}
+      <Wrapper editorStyles={config?.styles} >
+        {!config &&
+          <LoaderBox hasRadius background="neutral100">
+            <Loader>Loading...</Loader>
+          </LoaderBox>}
+        {config &&
           <CKEditor
             editor={window.CKEditor5.editorClassic.ClassicEditor}
             config={config?.editorConfig}
             disabled={disabled}
             data={value}
             onReady={(editor) => {
-              
-              if(config.editorConfig.WordCountPlugin){
-                const wordCountPlugin = editor.plugins.get( 'WordCount' );
-                wordCountPlugin.on( 'update', ( evt, stats ) =>handleCounter(stats.characters));
+
+              if (config.editorConfig.WordCountPlugin) {
+                const wordCountPlugin = editor.plugins.get('WordCount');
+                wordCountPlugin.on('update', (evt, stats) => handleCounter(stats.characters));
                 const wordCountWrapper = wordCounter.current;
-                wordCountWrapper?.appendChild( wordCountPlugin.wordCountContainer );
+                wordCountWrapper?.appendChild(wordCountPlugin.wordCountContainer);
+                console.log("hello update");
               }
 
-              if(editor.plugins.has( 'ImageUploadEditing' )){
-                editor.plugins.get( 'ImageUploadEditing' ).on( 'uploadComplete', ( evt, { data, imageElement } ) =>    
-                  editor.model.change( writer => writer.setAttribute( 'alt', data.alt, imageElement ) ) );
+              if (editor.plugins.has('ImageUploadEditing')) {
+                editor.plugins.get('ImageUploadEditing').on('uploadComplete', (evt, { data, imageElement }) =>
+                  editor.model.change(writer => writer.setAttribute('alt', data.alt, imageElement)));
+                console.log("hello ImageUploadEditing");
+
               }
 
-              editor.model.document.on('change:data', () => {
-                const images = Array.from(editor.model.document.getRoot().getChildrenByPath([0]));
-                for (const img of images) {
-                  if (img.is('element', 'image')) {
-                    editor.model.change(writer => {
-                      writer.setAttribute('class', 'img-fluid', img);
-                    });
-                  }
-                }
-              });
-            
-              setEditorInstance( editor );
+              setEditorInstance(editor);
             }}
             onChange={(event, editor) => {
               const data = editor.getData();
               onChange({ target: { name, value: data } });
             }}
           />
-      }
-      {config && config.editorConfig.WordCountPlugin && 
-          <CounterLoaderBox 
-            color={lengthMax?"danger500":"neutral400"} 
+        }
+        {config && config.editorConfig.WordCountPlugin &&
+          <CounterLoaderBox
+            color={lengthMax ? "danger500" : "neutral400"}
             ref={wordCounter}>
-              {!editorInstance && <Loader small>Loading...</Loader>}
+            {!editorInstance && <Loader small>Loading...</Loader>}
           </CounterLoaderBox>
-      }
-      {uploadPluginConfig && <MediaLib isOpen={mediaLibVisible} onToggle={handleToggleMediaLib} editor={editorInstance} uploadConfig={uploadPluginConfig} />}
-    </Wrapper>
+        }
+        {uploadPluginConfig && <MediaLib isOpen={mediaLibVisible} onToggle={handleToggleMediaLib} editor={editorInstance} uploadConfig={uploadPluginConfig} />}
+      </Wrapper>
     </>
   );
 };
